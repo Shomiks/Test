@@ -1,100 +1,62 @@
-import React, {Component} from 'react';
-import '../App.css';
-import '../logIn.css'
-import 'bootstrap/dist/css/bootstrap.css';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 
+// Component types
+// 1. Complex (state, lifecycle methods)
+// 2. Functional or Stateless component
 
-class AddMessage extends Component {
-    constructor(props) {
-        super(props);
-        this.state={
-            goLive: this.props.goLive,
-            onAddMessage:this.props.onAddMessage,
-            text: '',
-            msgid: 0,
-        }
-    }
+// Re-rendering
+// 1. State changes
+// 2. Props changes
 
-    handleText = (event) =>{
-        this.state.text = event.target.value;
-        console.log(this.state.text);
-    };
+const Container = styled.div`
+    margin-top: 200px;
+`
 
-    addMessage= ()=>{
-        let message = {
-            text : this.state.text,
-            userid : this.state.goLive.CurrentID,
-            id: this.state.goLive.MessageID
-        };
-        this.state.onAddMessage(message);
-    };
+const AddMessage = ({user, addMessage}) => {
+    const [ message, setMessage ] = useState('');
 
-    removeMessage= () =>{
-
-    }
-
-
-    render() {
-
-        let username = "";
-        for (let i = 0; i < this.state.goLive.Users.length; i++) {
-            if(this.state.goLive.CurrentID === this.state.goLive.Users[i].UserID){
-                username = this.state.goLive.Users[i].Username;
-            }
-        }
-
-        return (
-
-            <div id="addMessageContainer" className="addMessageContainer">
-                <Row>
-                    <Col>
-
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Col>
-                            <span>
-                                {username}
-                            </span>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <Form.Label>Your message </Form.Label>
-                                <Form.Control onChange={this.handleText} as="textarea" rown="3" placeholder="Message"/>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col xl="8">
-
-                            </Col>
-                            <Col xl="4">
-                                <div className="buttonContainer">
-
-                                    <Button onClick={this.addMessage} variant="primary" size="xl" active>
-                                        Add Message
-                                    </Button>
-                                </div>
-                            </Col>
-                            <Col>
-                                <Button onClick={this.removeMessage} variant="primary" size="xl" active>
-                                    Delete messages
+    return (
+        <Container>
+            <Row>
+                <Col />
+                <Col>
+                    <Row>
+                        <Col>
+                            <span>{user.username}</span>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <Form.Label>Your message </Form.Label>
+                            <Form.Control
+                                onChange={event => setMessage(event.target.value)}
+                                as="textarea"
+                                rown="3"
+                                placeholder="Message" />
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col xl="8" />
+                        <Col xl="4">
+                            <div className="buttonContainer">
+                                {user.username}
+                                <Button onClick={() => addMessage({message})} variant="primary" size="xl" active>
+                                    Add Message
                                 </Button>
-                            </Col>
-
-                        </Row>
-
-                    </Col>
-                    <Col>
-
-                    </Col>
-                </Row>
-            </div>
-
-        )
-    }
-
-}
+                            </div>
+                        </Col>
+                        <Col>
+                            <Button onClick={() => {}} variant="primary" size="xl" active>
+                                Delete messages
+                            </Button>
+                        </Col>
+                    </Row>
+                </Col>
+                <Col />
+            </Row>
+    </Container>)
+};
 
 export default AddMessage;

@@ -1,111 +1,104 @@
-import React, {Component} from 'react';
-import './App.css';
-import Login from './components/Login'
+import React from 'react';
+import styled from 'styled-components';
+import _ from 'lodash';
+import Chance from 'chance';
+import localStorage from 'localStorage';
+
 import 'bootstrap/dist/css/bootstrap.css';
-import AddMessage from "./components/AddMessage";
-import Message from "./components/Message";
-import {GoLiveStruct} from "./Generic";
+
 import MessageListing from './components/MessageListing';
+import AddMessage from "./components/AddMessage";
+import Login from './components/Login'
 
 
+const AppStyled = styled.div`
+  width: 100%;
+  height: 100%;
+  margin: 0;
+`;
 
-class App extends Component {
+const chance = new Chance();
+
+class App extends React.Component {
+
     constructor(props) {
         super(props);
+
         this.state = {
-            goLive: GoLiveStruct.LoadFromLocalStorage(),
-            id: 0
-        }
+            users: JSON.parse(localStorage.getItem('users')) || [],
+            messages: JSON.parse(localStorage.getItem('messages')) || [],
+            config: JSON.parse(localStorage.getItem('config')) || {
+                user: {},
+                step: 0,
+            }
+        };
     }
 
+    navigateTo = step => {
+        const { config } = this.state;
+        localStorage.setItem('config', JSON.stringify({...config, step}));
+        this.setState({
+            ...this.state,
+            config: {...config, step},
+         });
+    };
 
 
-    checkUser = (user) => {
+    signUp = async ({username, password}) => {
+        const {config, users} = this.state;
 
-        for (let i = 0; i < this.state.goLive.Users.length; i++) {
-            console.log(user.username);
-            console.log(user.password);
-            if (user.username === this.state.goLive.Users[i].Username && user.password === this.state.goLive.Users[i].Password ) {
-                    this.state.goLive.CurrentID = this.state.goLive.Users[i].UserID;
-                    this.state.goLive.SaveToLocalStorage();
-                    return true;
-            }
+        const user = {id: chance.guid(), username, password};
 
+        if (!_.some(users, {username, password})) {
+            localStorage.setItem('config', JSON.stringify({...config, user}));
+            localStorage.setItem('users', JSON.stringify([...users, user]));
+          this.setState({
+                ...this.state,
+                config: {...config, user},
+                users: [...users, user]
+            },() => this.navigateTo(2) );
         }
-
-        return false;
-
     };
 
+    login = async ({username, password}) => {
+        const { config, users } = this.state;
+        const foundUser = _.find(users, usr => { return usr.username === username &&  usr.password === password});
 
-    addStep = (user) => {
-        if (this.state.goLive.CurrentStep === 1) {
-            this.state.goLive.addUser();
-            this.state.goLive.ID++;
-            this.state.goLive.Users[this.state.goLive.Users.length - 1].changeUser(user);
-            this.state.goLive.CurrentStep++;
-            this.state.goLive.CurrentID = this.state.goLive.Users[this.state.goLive.Users.length - 1].UserID;
-            console.log(this.state.goLive.UserID, "peca");
-            this.state.goLive.SaveToLocalStorage();
-            console.log(this.state.goLive.UserID)
-        } else {
-            if (this.checkUser(user)) {
-                console.log("success");
-                this.state.goLive.CurrentStep+=2;
-                this.forceUpdate();
-            } else {
-                alert("error");
-            }
+        if (foundUser) {
+            this.setState({
+                ...this.state,
+                config: {...config, user: foundUser},
+            },() => this.navigateTo(2) );
         }
-
-        this.forceUpdate();
     };
 
-    addMessage = (message) =>{
-        this.state.goLive.addMessage();
-        this.state.goLive.MessageID++;
-
-        this.state.goLive.Messages[this.state.goLive.Messages.length - 1].changeMessage(message);
-        this.state.goLive.SaveToLocalStorage();
-        this.forceUpdate();
-        console.log(this.state.goLive.Messages)
+    addMessage = ({message}) => {
+        this.setState({
+            ...this.state,
+            messages: [...this.state.messages, {
+                id: chance.guid(),
+                text: message,
+                userId: this.state.config.user.id,
+            }]
+        }, () => localStorage.setItem('messages', JSON.stringify(this.state.messages)))
     };
 
-    justAdd = () =>{
-      this.state.goLive.CurrentStep++;
-        this.forceUpdate();
-    };
+    render(){
+        const { config, messages, users} = this.state;
 
-    backStep = () => {
-        this.state.goLive.CurrentStep = 0;
-        this.forceUpdate();
-    };
-
-
-    render() {
-    console.log(this.state.goLive.CurrentStep);
-
-        let html = [];
-        switch (this.state.goLive.CurrentStep) {
-            case 2:
-                html.push(<MessageListing goLive={this.state.goLive} onLogout={this.backStep}/>);
-
-                html.push(<AddMessage goLive={this.state.goLive} onAddMessage={this.addMessage}/>);
-                break;
-            default:
-                html.push(<Login  goLive={this.state.goLive} onAddStep={this.addStep} onBackStep={this.backStep}
-                                 currentStep={this.state.currentStep} onAddStepNumber={this.justAdd}/>);
-                break;
-
-        }
-
-        console.log(this.state.goLive.CurrentStep);
         return (
-            <div className="App">
-                {html}
-            </div>
-        );
-    }
+        <AppStyled>
+            {config.step !== 2
+                ? (<Login step={config.step} navigateTo={this.navigateTo} signUp={this.signUp} login={this.login}/>)
+                :
+                <React.Fragment>
+                    <MessageListing messages={messages} users={users} navigateTo={this.navigateTo} user={config.user}/>
+                    <AddMessage addMessage={this.addMessage} user={config.user}/>
+                </React.Fragment>
+            }
+        </AppStyled>
+    );
+}
 }
 
 export default App;
