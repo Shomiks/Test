@@ -1,7 +1,6 @@
 import React, { useState} from 'react';
 import styled from 'styled-components';
 import {Row, Col, Form,Button} from 'react-bootstrap';
-import '../logIn.css'
 
 const TitleStyled = styled.div`
     max-width: 100%;
