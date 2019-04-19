@@ -1,0 +1,33 @@
+.logInContainer{
+    width: 100%;
+    height: auto;
+    margin: 0;
+}
+.divWidder {
+    max-width: 100%;
+    min-height: 300px;
+    line-height: 300px;
+    text-align: center;
+}
+.buttonContainer{
+    margin-top: 20px;
+
+}
+
+.messageText{
+    background: #0084ff;
+    color: #fff;
+    border-radius: 30px;
+    height: auto;
+    display: inline-block;
+    margin-bottom: 2px;
+    padding: 12px;
+}
+
+.hide{
+    display: none;
+}
+
+#addMessageContainer{
+    margin-top: 200px;
+}
